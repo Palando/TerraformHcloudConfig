@@ -13,7 +13,7 @@ resource "hcloud_network_subnet" "rancher_mgmt_subnet" {
 
 # VMs
 resource "hcloud_server" "rancher_mgmt_nodes" {
-    count = 1
+    count = 2
     name = "rancher-mgmt-${count.index + 1}"
     image = "debian-11"
     server_type = "cx11"
@@ -24,14 +24,14 @@ resource "hcloud_server" "rancher_mgmt_nodes" {
         command = <<EOT
             sleep 20
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -u root -i '${self.ipv4_address},' ../Ansible/update.yaml
+            # ansible-playbook -u root -i '${self.ipv4_address},' ../Ansible/update.yaml
         EOT
     }
 }
 
 # Add nodes to subnet
 resource "hcloud_server_network" "rancher_node_subnet_registration" {
-    count = 1
+    count = 2
     server_id = hcloud_server.rancher_mgmt_nodes[count.index].id
     subnet_id = hcloud_network_subnet.rancher_mgmt_subnet.id
 }
