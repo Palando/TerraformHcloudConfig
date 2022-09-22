@@ -11,7 +11,7 @@ Terraform has to be installed.
    This is an example how to execute an Ansible playbook on the instance
 1. ```terraform init```
 1. ```export HCLOUD_TOKEN=<token>```
-1. ```terraform plan -var hcloud_token=$HCLOUD_TOKEN -auto-approve```
+1. ```terraform plan -var hcloud_token=$HCLOUD_TOKEN```
 1. ```terraform apply -var hcloud_token=$HCLOUD_TOKEN -auto-approve```
 1. Do something with the VM
 1. ```terraform destroy -var hcloud_token=$HCLOUD_TOKEN -auto-approve```
