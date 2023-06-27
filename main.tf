@@ -18,7 +18,7 @@ resource "hcloud_server" "rancher_mgmt_nodes" {
     image = "debian-12"
     server_type = "cx41"
     location = "nbg1"
-    ssh_keys = [ "sgaspar@mbsgaspar" ]
+    ssh_keys = [ "sgaspar@mbsgaspar", "sascha@router.homenet.saschagaspar.net" ]
 }
 
 # Add nodes to subnet
@@ -96,7 +96,6 @@ resource "terraform_data" "script" {
 
     provisioner "local-exec" {
         command = <<EOT
-            sleep 10
             ./setup.sh
             # ansible-playbook -u root -i inventory.yml ../Ansible/update.yaml
             ansible -i inventory.yml all -m ping
