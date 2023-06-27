@@ -13,25 +13,17 @@ resource "hcloud_network_subnet" "rancher_mgmt_subnet" {
 
 # VMs
 resource "hcloud_server" "rancher_mgmt_nodes" {
-    count = 3
+    count = var.server_count
     name = "rancher-mgmt-${count.index + 1}"
-    image = "debian-11"
-    server_type = "cx11"
+    image = "debian-12"
+    server_type = "cx41"
     location = "nbg1"
     ssh_keys = [ "sgaspar@mbsgaspar" ]
-
-    provisioner "local-exec" {
-        command = <<EOT
-            sleep 20
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            # ansible-playbook -u root -i '${self.ipv4_address},' ../Ansible/update.yaml
-        EOT
-    }
 }
 
 # Add nodes to subnet
 resource "hcloud_server_network" "rancher_node_subnet_registration" {
-    count = 2
+    count     = var.server_count
     server_id = hcloud_server.rancher_mgmt_nodes[count.index].id
     subnet_id = hcloud_network_subnet.rancher_mgmt_subnet.id
 }
@@ -39,30 +31,39 @@ resource "hcloud_server_network" "rancher_node_subnet_registration" {
 # Volumes
 
 resource "hcloud_volume" "rancher_volume-1" {
-  count = 2
+  count     = var.server_count
   name      = "rancher-volume-${count.index + 1}-1"
   size      = 50
   server_id = hcloud_server.rancher_mgmt_nodes[count.index].id
-  automount = true
-  format    = "xfs"
+  automount = false
+  # format    = "xfs"
+  depends_on = [
+    hcloud_server_network.rancher_node_subnet_registration
+  ]
 }
 
 resource "hcloud_volume" "rancher_volume-2" {
-  count = 2
+  count     = var.server_count
   name      = "rancher-volume-${count.index + 1}-2"
   size      = 50
   server_id = hcloud_server.rancher_mgmt_nodes[count.index].id
-  automount = true
-  format    = "xfs"
+  automount = false
+  # format    = "xfs"
+  depends_on = [
+    hcloud_volume.rancher_volume-1
+  ]
 }
 
 resource "hcloud_volume" "rancher_volume-3" {
-  count = 2
+  count     = var.server_count
   name      = "rancher-volume-${count.index + 1}-3"
   size      = 50
   server_id = hcloud_server.rancher_mgmt_nodes[count.index].id
-  automount = true
-  format    = "xfs"
+  automount = false
+  # format    = "xfs"
+  depends_on = [
+    hcloud_volume.rancher_volume-2
+  ]
 }
 
 resource "local_file" "hosts_cfg" {
@@ -84,4 +85,21 @@ resource "local_file" "setup_sh" {
         }
     )
     filename = "./setup.sh"
+}
+
+resource "terraform_data" "script" {
+    depends_on = [
+        local_file.hosts_cfg,
+        local_file.setup_sh,
+        hcloud_volume.rancher_volume-3
+    ]
+
+    provisioner "local-exec" {
+        command = <<EOT
+            sleep 10
+            ./setup.sh
+            # ansible-playbook -u root -i inventory.yml ../Ansible/update.yaml
+            ansible -i inventory.yml all -m ping
+        EOT
+    }
 }
