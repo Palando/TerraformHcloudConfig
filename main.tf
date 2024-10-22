@@ -16,9 +16,9 @@ resource "hcloud_server" "rancher_mgmt_nodes" {
     count = var.server_count
     name = "rancher-mgmt-${count.index + 1}"
     image = "debian-12"
-    server_type = "cx41"
+    server_type = "cx22"
     location = "nbg1"
-    ssh_keys = [ "sgaspar@mbsgaspar", "sascha@router.homenet.saschagaspar.net" ]
+    ssh_keys = [ "sascha@desktop.homenet.saschagaspar.net#Windows", "sgaspar@mbsgaspar", "sascha@router.homenet.saschagaspar.net" ]
 }
 
 # Add nodes to subnet
@@ -74,7 +74,7 @@ resource "local_file" "hosts_cfg" {
             nodes = hcloud_server.rancher_mgmt_nodes.*.ipv4_address
         }
     )
-    filename = "./inventory.yml"
+    filename = "./inventory.yaml"
 }
 
 resource "local_file" "setup_sh" {
@@ -87,6 +87,7 @@ resource "local_file" "setup_sh" {
     filename = "./setup.sh"
 }
 
+/*
 resource "terraform_data" "script" {
     depends_on = [
         local_file.hosts_cfg,
@@ -97,8 +98,9 @@ resource "terraform_data" "script" {
     provisioner "local-exec" {
         command = <<EOT
             ./setup.sh
-            # ansible-playbook -u root -i inventory.yml ../Ansible/update.yaml
-            ansible -i inventory.yml all -m ping
+            # ansible-playbook -u root -i inventory.yaml ../Ansible/update.yaml
+            ansible -i inventory.yaml all -m ping
         EOT
     }
 }
+*/
