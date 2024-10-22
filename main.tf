@@ -18,7 +18,7 @@ resource "hcloud_server" "rancher_mgmt_nodes" {
     image = "debian-12"
     server_type = "cx22"
     location = "nbg1"
-    ssh_keys = [ "sascha@desktop.homenet.saschagaspar.net#Windows", "sgaspar@mbsgaspar", "sascha@router.homenet.saschagaspar.net" ]
+    ssh_keys = [ "sascha@desktop.homenet.saschagaspar.net#Windows", "sascha@router.homenet.saschagaspar.net" ]
 }
 
 # Add nodes to subnet
